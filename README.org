@@ -1,0 +1,129 @@
+
+#+title: NixOS-dotfiles
+#+date: <2023-10-25 mer>
+
+Please do not use those configurations as is (at least for now) they
+are still in testing and specific to my machine.
+
+#+begin_src bash :outputs both
+  tree --gitignore
+#+end_src
+
+#+RESULTS:
+| .   |              |                            |             |             |
+| ├── | flake.lock   |                            |             |             |
+| ├── | flake.nix    |                            |             |             |
+| ├── | home.nix     |                            |             |             |
+| ├── | hosts        |                            |             |             |
+| │   | └──          | crystalcave                |             |             |
+| │   | ├──          | configuration.nix          |             |             |
+| │   | └──          | hardware-configuration.nix |             |             |
+| ├── | modules      |                            |             |             |
+| │   | ├──          | home-manager               |             |             |
+| │   | │            | ├──                        | alacritty   |             |
+| │   | │            | │                          | └──         | default.nix |
+| │   | │            | ├──                        | default.nix |             |
+| │   | │            | ├──                        | hypr        |             |
+| │   | │            | │                          | └──         | default.nix |
+| │   | │            | ├──                        | waybar      |             |
+| │   | │            | │                          | └──         | default.nix |
+| │   | │            | └──                        | wofi        |             |
+| │   | │            | └──                        | default.nix |             |
+| │   | └──          | nixos                      |             |             |
+| │   | ├──          | apps                       |             |             |
+| │   | │            | └──                        | emacs.nix   |             |
+| │   | └──          | desktop                    |             |             |
+| │   | └──          | xorg.nix                   |             |             |
+| └── | README.org   |                            |             |             |
+|     |              |                            |             |             |
+| 12  | directories, | 13                         | files       |             |
+
+* CristalCave
+** Installation
++ Followed most instructions from this documentation [[https://gist.github.com/walkermalling/23cf138432aee9d36cf59ff5b63a2a58][gist]].
+*** Create the Iso
+(simply download it from the official site, here I'm building mine)
+#+begin_src bash
+  nix build .#nixosConfigurations.isos.config.system.build.isoImage -o /storage/isos/main
+#+end_src
+*** Disk partition
+Clean the disk with
+~sudo wipefs -a /dev/nvme0n1~.
+**** First partition
+#+begin_src bash
+  parted /dev/nvme0n1 -- mklabel gpt
+  parted /dev/nvme0n1 -- mkpart ESP fat32 1MiB 512MiB
+  parted /dev/nvme0n1 -- set 1 boot on
+#+end_src
+**** Second partition
+#+begin_src bash
+  parted /dev/nvme0n1 -- mkpart primary 512MiB 100%
+#+end_src
+*** Formatting + Encryption
+#+begin_src bash
+  cryptsetup luksFormat /dev/nvme0n1p2
+  cryptsetup open /dev/nvme0n1p2 ccrypt
+  pvcreate /dev/mapper/ccrypt
+  vgcreate vg /dev/mapper/ccrypt
+  lvcreate -l '100%FREE' -n ccryptnix vg
+  mkfs.fat -F32 -n BOOT /dev/nvme0n1p1
+  mkfs.ext4 -L ccryptnix /dev/vg/ccryptnix
+#+end_src
+
+Then mount the disk
+#+begin_src bash
+  mount /dev/disk/by-label/ccryptnix /mnt
+  mkdir -p /mnt/boot
+  mount /dev/disk/by-label/BOOT /mnt/boot
+#+end_src
+*** Generate the base config
+#+begin_src bash
+  nixos-generate-config --root /mnt
+#+end_src
+
+Find the blkid for the disk:
+#+begin_src bash
+  echo $(blkid -s UUID -o value /dev/nvme0n1p2) # option for the luks device ccrypt
+  echo $(blkid -s UUID -o value /dev/mapper/ccrypt) # if I want to specify root filesystem by hand
+  echo $(blkid -s UUID -o value /dev/nvme0n1p1) # if I want to get the /boot filesystem mounted
+#+end_src
+
+Modify the config like this:
+#+begin_src nix
+  # boot.loader.systemd-boot.enable = true;
+  boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    enableCryptodisk = true;
+    device = "nodev";
+  };
+
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  boot.initrd.luks.devices = {
+    crypted = {
+      device = "/dev/disk/by-uuid/39f83b13-2cf2-4e3d-be11-8b109206c202";
+      preLVM = true;
+    };
+  };
+
+  users.users.prcn = {
+    isNormalUser = true;
+    description = "prcn";
+    extraGroups = [ "wheel" ];
+  };
+
+  environment.systemPackages = with pkgs; [
+    vim 
+    git wget 
+  ];
+
+  services.openssh = {
+    enable = true;
+    settings.PermitRootLogin = "yes";
+  };
+#+end_src
+** Updating after a change
+#+begin_src bash
+  sudo nixos-rebuild switch --flake .#
+#+end_src
