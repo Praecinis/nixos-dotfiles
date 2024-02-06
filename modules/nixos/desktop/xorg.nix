@@ -12,15 +12,16 @@
     
     desktopManager = {
       xterm.enable = false;
+      plasma5.enable = true;
     };
     
     displayManager = {
-      defaultSession = "Hyprland";
+      defaultSession = "hyprland";
     };
   };
-  
-  services.picom.enable = true;
-  services.gnome.gnome-keyring.enable = true;
-  services.gnome.sushi.enable = true;
-  programs.seahorse.enable = true;
+
+  xdg.portal = {
+    enable = true;
+    configPackages = [ pkgs.xdg-desktop-portal-hyprland ];
+  };
 }
