@@ -5,7 +5,7 @@
     enable = true;
     xwayland.enable = true;
     extraConfig = ''
-    bind=$mod, print, exec, grim -g "$(slurp -d)" | wl-copy
+      bind=$mod, print, exec, grim -g "$(slurp -d)" | wl-copy
     '';
     settings = {
       general = {
@@ -81,7 +81,7 @@
         ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
         ", XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"
         ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-        
+
         # Workspaces
         "$mod, 1, workspace, 1"
         "$mod, 2, workspace, 2"

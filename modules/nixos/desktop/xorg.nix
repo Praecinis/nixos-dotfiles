@@ -9,12 +9,12 @@
     };
 
     excludePackages = with pkgs; [ xterm ];
-    
+
     desktopManager = {
       xterm.enable = false;
       plasma5.enable = true;
     };
-    
+
     displayManager = {
       defaultSession = "hyprland";
     };

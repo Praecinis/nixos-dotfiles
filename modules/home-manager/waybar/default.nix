@@ -27,9 +27,9 @@
         ];
 
         "hyprland/window" = {
-           max-length = 70;
+          max-length = 70;
         };
-        
+
         "hyprland/workspaces" = {
           all-outputs = true;
           disable-scroll = true;
