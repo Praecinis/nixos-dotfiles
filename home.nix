@@ -41,6 +41,7 @@
     wl-clipboard
     obs-studio
     qview
+    inkscape
   ];
 
   programs.direnv = {
@@ -61,7 +62,7 @@
       export PS1="\\[\\033[38;5;54m\\]\\u@$(shostname):\\w\\$\\[\\033[0m\\] ";
     '';
   };
-  
-  programs.alacritty.enable = true;
+
+  services.kdeconnect.enable = true;
   programs.home-manager.enable = true;
 }
