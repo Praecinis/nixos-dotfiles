@@ -9,13 +9,14 @@
   
   services.emacs = {
     enable = true;
+    defaultEditor = true;
     package = with pkgs; ((emacsPackagesFor emacs).emacsWithPackages
      	(epkgs: with epkgs;
 		    [
           use-package
           highlight-indent-guides
           treemacs
-          doom-themes doom-modeline nano-theme
+          doom-themes doom-modeline 
           nerd-icons nerd-icons-ibuffer nerd-icons-dired
           sqlite3 sql-indent
           org-wc
