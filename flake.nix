@@ -9,6 +9,7 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     hyprland.url = "github:hyprwm/Hyprland";
+    sops-nix.url = "github:Mic92/sops-nix";
   };
 
   outputs =
@@ -41,15 +42,15 @@
             home-manager.useUserPackages = true;
             home-manager.users.prcn = import ./home.nix;
           }
-          ({ config, pkgs, lib, ... }:
-            {
-              xdg.portal = {
-                enable = true;
-                configPackages = [ pkgs.xdg-desktop-portal-hyprland ];
-              };
-              services.xserver.displayManager.defaultSession = lib.mkForce "hyprland";
-            }
-          )
+          # ({ config, pkgs, lib, ... }:
+          #   {
+          #     xdg.portal = {
+          #       enable = true;
+          #       configPackages = [ pkgs.xdg-desktop-portal-hyprland ];
+          #     };
+          #     services.xserver.displayManager.defaultSession = lib.mkForce "hyprland";
+          #   }
+          # )
         ];
       };
     };

@@ -1,12 +1,22 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      inputs.sops-nix.nixosModules.sops
       ./../../modules/nixos/apps/emacs.nix
       ./../../modules/nixos/desktop/xorg.nix
     ];
+
+  sops.defaultSopsFile = ../../secrets/secrets.yaml;
+  sops.defaultSopsFormat = "yaml";
+  sops.age.keyFile = "/home/prcn/.config/sops/age/keys.txt";
+  sops.secrets = {
+    main_sshkey = {
+      sopsFile = ../../secrets/secrets.yaml;
+    };
+  };
   
   boot.loader.grub = {
     enable = true;
@@ -35,10 +45,17 @@
   };
   
   hardware.bluetooth.enable = true;
+ 
   networking.networkmanager.enable = true;
+  networking.hostName = "crystalcave";
   networking.extraHosts = ''
     127.0.0.1 crystalcave
   '';
+
+  networking.firewall = { 
+    enable = true;
+  };
+  
   services.thermald.enable = true;
   services.fprintd.enable = true;
   
@@ -52,7 +69,6 @@
     ];
   };
   
-  networking.hostName = "crystalcave";
   nix.settings = {
     experimental-features = [
       "nix-command" "flakes"
@@ -106,9 +122,13 @@
 	  settings.PermitRootLogin = "yes";
   };
 
+  users.users.root.openssh.authorizedKeys.keyFiles = [
+    config.sops.secrets.main_sshkey.path
+  ];
+
+  programs.kdeconnect.enable = true;
   programs.hyprland.enable = true;
   programs.adb.enable = true;
   system.stateVersion = "23.11"; # Did you read the comment?
-
 }
 
