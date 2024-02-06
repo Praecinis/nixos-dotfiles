@@ -5,39 +5,6 @@
 Please do not use those configurations as is (at least for now) they
 are still in testing and specific to my machine.
 
-#+begin_src bash :outputs both
-  tree --gitignore
-#+end_src
-
-#+RESULTS:
-| .   |              |                            |             |             |
-| ├── | flake.lock   |                            |             |             |
-| ├── | flake.nix    |                            |             |             |
-| ├── | home.nix     |                            |             |             |
-| ├── | hosts        |                            |             |             |
-| │   | └──          | crystalcave                |             |             |
-| │   | ├──          | configuration.nix          |             |             |
-| │   | └──          | hardware-configuration.nix |             |             |
-| ├── | modules      |                            |             |             |
-| │   | ├──          | home-manager               |             |             |
-| │   | │            | ├──                        | alacritty   |             |
-| │   | │            | │                          | └──         | default.nix |
-| │   | │            | ├──                        | default.nix |             |
-| │   | │            | ├──                        | hypr        |             |
-| │   | │            | │                          | └──         | default.nix |
-| │   | │            | ├──                        | waybar      |             |
-| │   | │            | │                          | └──         | default.nix |
-| │   | │            | └──                        | wofi        |             |
-| │   | │            | └──                        | default.nix |             |
-| │   | └──          | nixos                      |             |             |
-| │   | ├──          | apps                       |             |             |
-| │   | │            | └──                        | emacs.nix   |             |
-| │   | └──          | desktop                    |             |             |
-| │   | └──          | xorg.nix                   |             |             |
-| └── | README.org   |                            |             |             |
-|     |              |                            |             |             |
-| 12  | directories, | 13                         | files       |             |
-
 * CristalCave
 ** Installation
 + Followed most instructions from this documentation [[https://gist.github.com/walkermalling/23cf138432aee9d36cf59ff5b63a2a58][gist]].
@@ -124,6 +91,7 @@ Modify the config like this:
   };
 #+end_src
 ** Updating after a change
+(added ~--impure~ because of current tests with sops-nix)
 #+begin_src bash
-  sudo nixos-rebuild switch --flake .#
+  sudo nixos-rebuild switch --flake .# --impure 
 #+end_src
